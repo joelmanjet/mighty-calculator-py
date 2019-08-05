@@ -150,8 +150,8 @@ class AddIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("AddIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
+        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
         result = calc.addition(n1, n2)
 
         speak_output = f"The result of {n1} plus {n2} is {result} {continue_msg} "
@@ -190,8 +190,8 @@ class SubtractIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("SubtractIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
+        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
         result = calc.subtraction(n1, n2)
 
         speak_output = f"The result of {n1} minus {n2} is {result} {continue_msg} "
@@ -212,8 +212,8 @@ class MultiplicationIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("MultiplyIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
+        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
         result = calc.multiplication(n1, n2)
 
         speak_output = f"The result of {n1} times {n2} is {result} {continue_msg} "
@@ -234,8 +234,8 @@ class DivisionIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("DivideIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
+        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
         result = calc.division(n1, n2)
 
         speak_output = f"The result of {n1} by {n2} is {result} {continue_msg} "
