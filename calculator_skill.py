@@ -236,7 +236,7 @@ class DivisionIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
         n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
-        result = calc.divison(n1, n2)
+        result = calc.division(n1, n2)
 
         speak_output = f"The result of {n1} by {n2} is {result} {continue_msg} "
         card = SimpleCard("My Calculator", str(result))

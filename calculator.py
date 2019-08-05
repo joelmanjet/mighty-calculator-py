@@ -10,7 +10,7 @@ def multiplication(num1, num2):
     return speakable(num1 * num2)
 
 
-def divison(num1, num2):
+def division(num1, num2):
     return speakable(num1 / num2)
 
 
