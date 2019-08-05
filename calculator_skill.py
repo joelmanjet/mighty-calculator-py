@@ -31,7 +31,8 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Welcome to My Calculator. You can say, add 2 and 5, or multiply 4 and 8."
+        sound_effect = '<audio src="soundbank://soundlibrary/musical/amzn_sfx_trumpet_bugle_03"/>'
+        speak_output = f"{sound_effect} Welcome to My Calculator. You can say, add 2 and 4.7, or multiply 4 and 8."
 
         return (
             handler_input.response_builder
@@ -50,7 +51,7 @@ class HelpIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "You can add, subtract, multipliy and divide operations with this calculator. Just say add two and five"
+        speak_output = "You can add, subtract, multipliy and divide operations with this calculator. Just say add 2.2 and 5.1"
 
         return (
             handler_input.response_builder
@@ -70,7 +71,8 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Goodbye!"
+        sound_effect = '<audio src="soundbank://soundlibrary/musical/amzn_sfx_trumpet_bugle_04"/>'
+        speak_output = f" {sound_effect} Goodbye!"
 
         return (
             handler_input.response_builder
@@ -148,8 +150,8 @@ class AddIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("AddIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = int(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = int(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
+        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
         result = calc.addition(n1, n2)
 
         speak_output = f"The result of {n1} plus {n2} is {result} {continue_msg} "
@@ -164,14 +166,32 @@ class AddIntentHandler(AbstractRequestHandler):
         )
 
 
+class YesIntentHandler(AbstractRequestHandler):
+
+    def can_handle(self, handler_input):
+        return ask_utils.is_intent_name("YesIntent")(handler_input)
+
+    def handle(self, handler_input):
+        logger.info("in yes intent handler")
+
+        speak_output = " You can add five and two or divide six by three "
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+
+
 class SubtractIntentHandler(AbstractRequestHandler):
 
     def can_handle(self, handler_input):
         return ask_utils.is_intent_name("SubtractIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = int(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = int(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
+        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
         result = calc.subtraction(n1, n2)
 
         speak_output = f"The result of {n1} minus {n2} is {result} {continue_msg} "
@@ -192,8 +212,8 @@ class MultiplicationIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("MultiplyIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = int(ask_utils.get_slot_value(handler_input, "firstNumber"))
-        n2 = int(ask_utils.get_slot_value(handler_input, "secondNumber"))
+        n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
+        n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
         result = calc.multiplication(n1, n2)
 
         speak_output = f"The result of {n1} times {n2} is {result} {continue_msg} "
@@ -216,7 +236,7 @@ class DivisionIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         n1 = float(ask_utils.get_slot_value(handler_input, "firstNumber"))
         n2 = float(ask_utils.get_slot_value(handler_input, "secondNumber"))
-        result = calc.division(n1, n2)
+        result = calc.divison(n1, n2)
 
         speak_output = f"The result of {n1} by {n2} is {result} {continue_msg} "
         card = SimpleCard("My Calculator", str(result))
@@ -242,6 +262,7 @@ sb.add_request_handler(SubtractIntentHandler())
 sb.add_request_handler(MultiplicationIntentHandler())
 sb.add_request_handler(DivisionIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
+sb.add_request_handler(YesIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
 sb.add_request_handler(
