@@ -11,6 +11,7 @@ from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 import ask_sdk_core.utils as ask_utils
+from ask_sdk_core.dispatch_components import AbstractRequestInterceptor
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model.ui import SimpleCard
 
@@ -19,6 +20,38 @@ from ask_sdk_model import Response
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 continue_msg = ". Do you want to calculate another equation?"
+
+
+def extract_numbers(handler_input):
+    first_number = ask_utils.get_slot_value(handler_input, "firstNumber")
+    first_decimal = ask_utils.get_slot_value(handler_input, "firstDecimal")
+    second_number = ask_utils.get_slot_value(handler_input, "secondNumber")
+    second_decimal = ask_utils.get_slot_value(handler_input, "secondDecimal")
+
+    a = f"{first_number}"
+    b = f"{second_number}"
+
+    if first_decimal != None:
+        a = f"{first_number}.{first_decimal}"
+    if second_decimal != None:
+        b = f"{second_number}.{second_decimal}"
+
+    number_dict = {
+        "n1": a,
+        "n2": b
+    }
+
+    return number_dict
+
+
+def speakable(x):
+    y = round(x, 1)
+    z = int(y)
+    if y == z:
+        return z
+    else:
+        return y
+
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -32,12 +65,13 @@ class LaunchRequestHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         sound_effect = '<audio src="soundbank://soundlibrary/musical/amzn_sfx_trumpet_bugle_03"/>'
-        speak_output = f"{sound_effect} Welcome to My Calculator. You can say, add 2 and 4.7, or multiply 4 and 8."
+        speak_output = f"{sound_effect} Welcome to the Mighty Calculator. You can say, add 2 and 4.7, or multiply 4 and 8. Say stop to exit."
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
                 .ask(speak_output)
+                .set_should_end_session(False)
                 .response
         )
 
@@ -51,11 +85,17 @@ class HelpIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "You can add, subtract, multipliy and divide operations with this calculator. Just say add 2.2 and 5.1"
+        speak_output = "You can perform addition, subtraction, multiplication and division operations with this calculator. " \
+                       " To add, just say add 2.2 and 5.1." \
+                       " To subtract, just say subtract 5 minus 2." \
+                       " To multiply, just say what is 2 times 4." \
+                       " To divide, just what is 6 by 2." \
+                       " Anytime you want to stop just say stop."
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
+                .set_should_end_session(False)
                 .ask(speak_output)
                 .response
         )
@@ -67,16 +107,18 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
         return (ask_utils.is_intent_name("AMAZON.CancelIntent")(handler_input) or
-                ask_utils.is_intent_name("AMAZON.StopIntent")(handler_input))
+                ask_utils.is_intent_name("AMAZON.StopIntent")(handler_input) or
+                ask_utils.is_intent_name("NoIntent")(handler_input))
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         sound_effect = '<audio src="soundbank://soundlibrary/musical/amzn_sfx_trumpet_bugle_04"/>'
-        speak_output = f" {sound_effect} Goodbye!"
+        speak_output = f"{sound_effect} Goodbye!"
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
+                .set_should_end_session(True)
                 .response
         )
 
@@ -93,7 +135,10 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
 
         # Any cleanup logic goes here.
 
-        return handler_input.response_builder.response
+        return (handler_input
+                .response_builder
+                .set_should_end_session(True)
+                .response)
 
 
 class IntentReflectorHandler(AbstractRequestHandler):
@@ -110,12 +155,13 @@ class IntentReflectorHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         intent_name = ask_utils.get_intent_name(handler_input)
-        speak_output = "You just triggered " + intent_name + "."
+        speak_output = "I do not understand what you asked, please try again. Say <b>Help</b> for to find the ways to ask equations."
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask("Do you want to me to figure another equation for you?")
+                .set_should_end_session(False)
+                # .ask("Do you want to me to figure another equation for you?")
                 .response
         )
 
@@ -134,12 +180,13 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
         # type: (HandlerInput, Exception) -> Response
         logger.error(exception, exc_info=True)
 
-        speak_output = "Sorry, I had trouble doing what you asked. Please try again."
+        speak_output = "Sorry, I had trouble doing what you asked. Please try again later. Goodbye!"
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask(speak_output)
+                .set_should_end_session(True)
+                # .ask(speak_output)
                 .response
         )
 
@@ -150,9 +197,10 @@ class AddIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("AddIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
-        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
-        result = calc.addition(n1, n2)
+        numbers = extract_numbers(handler_input)
+        n1 = numbers["n1"]
+        n2 = numbers["n2"]
+        result = speakable(calc.addition(n1, n2))
 
         speak_output = f"The result of {n1} plus {n2} is {result} {continue_msg} "
         card = SimpleCard("My Calculator", str(result))
@@ -161,7 +209,7 @@ class AddIntentHandler(AbstractRequestHandler):
             handler_input.response_builder
                 .speak(speak_output)
                 .set_card(card)
-                # .ask("Do you want to calculate another equation?")
+                .set_should_end_session(False)
                 .response
         )
 
@@ -174,12 +222,13 @@ class YesIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         logger.info("in yes intent handler")
 
-        speak_output = " You can add five and two or divide six by three "
+        speak_output = " You can now say your next equation. "
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask(speak_output)
+                # .ask(speak_output)
+                .set_should_end_session(False)
                 .response
         )
 
@@ -190,9 +239,10 @@ class SubtractIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("SubtractIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
-        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
-        result = calc.subtraction(n1, n2)
+        numbers = extract_numbers(handler_input)
+        n1 = numbers["n1"]
+        n2 = numbers["n2"]
+        result = speakable(calc.subtraction(n1, n2))
 
         speak_output = f"The result of {n1} minus {n2} is {result} {continue_msg} "
         card = SimpleCard("My Calculator", str(result))
@@ -201,7 +251,7 @@ class SubtractIntentHandler(AbstractRequestHandler):
             handler_input.response_builder
                 .speak(speak_output)
                 .set_card(card)
-                # .ask("Do you want to calculate another equation?")
+                .set_should_end_session(False)
                 .response
         )
 
@@ -212,9 +262,10 @@ class MultiplicationIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("MultiplyIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
-        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
-        result = calc.multiplication(n1, n2)
+        numbers = extract_numbers(handler_input)
+        n1 = numbers["n1"]
+        n2 = numbers["n2"]
+        result = speakable(calc.multiplication(n1, n2))
 
         speak_output = f"The result of {n1} times {n2} is {result} {continue_msg} "
         card = SimpleCard("My Calculator", str(result))
@@ -223,7 +274,7 @@ class MultiplicationIntentHandler(AbstractRequestHandler):
             handler_input.response_builder
                 .speak(speak_output)
                 .set_card(card)
-                # .ask("Do you want to calculate another equation?")
+                .set_should_end_session(False)
                 .response
         )
 
@@ -234,9 +285,10 @@ class DivisionIntentHandler(AbstractRequestHandler):
         return ask_utils.is_intent_name("DivideIntent")(handler_input)
 
     def handle(self, handler_input):
-        n1 = ask_utils.get_slot_value(handler_input, "firstNumber")
-        n2 = ask_utils.get_slot_value(handler_input, "secondNumber")
-        result = calc.division(n1, n2)
+        numbers = extract_numbers(handler_input)
+        n1 = numbers["n1"]
+        n2 = numbers["n2"]
+        result = speakable(calc.division(n1, n2))
 
         speak_output = f"The result of {n1} by {n2} is {result} {continue_msg} "
         card = SimpleCard("My Calculator", str(result))
@@ -245,7 +297,7 @@ class DivisionIntentHandler(AbstractRequestHandler):
             handler_input.response_builder
                 .speak(speak_output)
                 .set_card(card)
-                # .ask("Do you want to calculate another equation?")
+                .set_should_end_session(False)
                 .response
         )
 
