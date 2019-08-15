@@ -65,7 +65,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         sound_effect = '<audio src="soundbank://soundlibrary/musical/amzn_sfx_trumpet_bugle_03"/>'
-        speak_output = f"{sound_effect} Welcome to the Mighty Calculator. You can say, add 2 and 4.7, or multiply 4 and 8. Say stop to exit."
+        speak_output = f"{sound_effect} Welcome to the Mighty Calculator. You can say, add 2 and 4.7, or multiply 4 and 8, for a more information say help, to exit say stop."
 
         return (
             handler_input.response_builder
