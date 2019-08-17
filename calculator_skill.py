@@ -89,7 +89,7 @@ class HelpIntentHandler(AbstractRequestHandler):
                        " To add, just say add 2.2 and 5.1." \
                        " To subtract, just say subtract 5 minus 2." \
                        " To multiply, just say what is 2 times 4." \
-                       " To divide, just what is 6 by 2." \
+                       " To divide, just say what is 6 by 2." \
                        " Anytime you want to stop just say stop."
 
         return (
